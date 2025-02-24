@@ -44,3 +44,24 @@ def creation_db_set(dir, set_id):
 #creation_db_set('datasets', 'sv08') # Surging Sparks
 #creation_db_set('datasets', 'sv03.5') # 151
 #creation_db_set('datasets', 'sv08.5') # Prismatic Evolutions
+
+def creation_stock_db_set(dir, set_name):
+    df_card = pd.read_excel(os.path.join(dir, f'cards_of_{set_name}.xlsx'))
+    list_stock = []
+    for _, row in df_card.iterrows():
+        base = {
+            'N': row['Local_ID'], 
+            'Name': row['Name'], 
+            'Rarity': row['Rarity']}
+        for t in ['Firt_Edition', 'Holo', 'Normal', 'Reverse', 'Promo']:
+            if row[t]:
+                copy = base.copy()
+                copy['Card_Type'] = t
+                list_stock.append(copy)
+    df_stock = pd.DataFrame(list_stock)
+    df_stock['Quantity'] = 0
+    df_stock.to_excel(os.path.join(dir, f'stock_of_{set_name}.xlsx'), index=False)
+
+#creation_stock_db_set('datasets', 'Surging_Sparks')
+#creation_stock_db_set('datasets', '151')
+#creation_stock_db_set('datasets', 'Prismatic_Evolutions')
