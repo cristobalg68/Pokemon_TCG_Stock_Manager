@@ -3,23 +3,25 @@ import os
 
 def mixing_tables(dir, set_name):
     df_products = pd.read_excel(os.path.join(dir, 'local_marketplace_products.xlsx'))
+    df_products = df_products[df_products['Set_Name'] == set_name]
     df_stock = pd.read_excel(os.path.join(dir, f'stock_of_{set_name}.xlsx'))
 
     new_columns = {'Published_Quantity': [], 'Published_Price': [], 'Publication_Exists': []}
     for _, row in df_stock.iterrows():
         product = df_products[
-            (df_products['Name'] == row['Name']) & 
-            (df_products['Set_Name'] == set_name) & 
+            (df_products['N'] == row['N']) & 
             (df_products['Card_Type'] == row['Card_Type'])]
     
-        if len(product) > 0:
+        if len(product) == 1:
             new_columns['Published_Quantity'].append(product.iloc[0]['Quantity'])
             new_columns['Published_Price'].append(product.iloc[0]['Price'])
             new_columns['Publication_Exists'].append(True)
-        else:
+        elif len(product) == 0:
             new_columns['Published_Quantity'].append(0)
             new_columns['Published_Price'].append(0)
             new_columns['Publication_Exists'].append(False)
+        else:
+            print(product)
     
     df_stock['Published_Quantity'] = new_columns['Published_Quantity']
     df_stock['Published_Price'] = new_columns['Published_Price']
