@@ -88,6 +88,7 @@ def update_stock(products, dir):
     df['Quantity'] = df['Quantity'].astype(int)
     df['Price'] = df['Price'].apply(lambda x: int(x[1:-4].replace('.','')))
     df['N'] = df['N'].apply(lambda x: x[:-4] if type(x) == str else x)
+    df['Card_Type'] = df['Card_Type'].apply(lambda x: x.replace('Holo Reverse','Reverse') if type(x) == str else x)
     df.to_excel(os.path.join(dir, 'local_marketplace_products.xlsx'), index=False)
 
 def main(dir):
