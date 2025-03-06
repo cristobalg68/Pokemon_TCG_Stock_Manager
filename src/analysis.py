@@ -4,7 +4,10 @@ import os
 def mixing_tables(dir, set_name):
     df_products = pd.read_excel(os.path.join(dir, 'local_marketplace_products.xlsx'))
     df_products = df_products[df_products['Set_Name'] == set_name]
-    df_stock = pd.read_excel(os.path.join(dir, f'stock_of_{set_name}.xlsx'))
+
+    set_name_file = set_name.lower().replace(' ', '_')
+
+    df_stock = pd.read_excel(os.path.join(dir, f'stock_of_{set_name_file}.xlsx'))
 
     new_columns = {'Published_Quantity': [], 'Published_Price': [], 'Publication_Exists': []}
     for _, row in df_stock.iterrows():
@@ -49,5 +52,5 @@ def main(dir, set_name):
 
 if __name__ == "__main__":
     dir = 'datasets'
-    set_name = '151'
+    set_name = 'Prismatic Evolutions'
     main(dir, set_name)
