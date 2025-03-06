@@ -1,8 +1,5 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 import time
 import pandas as pd
 import numpy as np
@@ -148,9 +145,9 @@ def get_offer(driver):
 
     return reviewed
 
-def order_offer(products, dir):
+def order_offer(products, dir, TCG, set_name):
     processed_products = []
-    for item_id, item in products.items():
+    for _, item in products.items():
         if item['In_Stock']:
             for offer in item['Offers']:
                 processed_products.append({
@@ -165,13 +162,14 @@ def order_offer(products, dir):
                     'Language': offer['language']
                     })
 
+    set_name = set_name.replace(' ', '_')
     df = pd.DataFrame(processed_products)
     df['N'] = df['N'].apply(lambda x: int(x[:-4]))
     df['Price'] = df['Price'].apply(lambda x: int(x[1:-4].replace('.','')))
     df['State'] = df['State'].apply(lambda x: x.replace('Estado: ',''))
     df['Card_Type'] = df['Card_Type'].apply(lambda x: x.replace('Holo Reverse','Reverse'))
     df['Quantity'] = df['Quantity'].apply(lambda x: int(x.replace('Cantidad disponible: ','')))
-    df.to_excel(os.path.join(dir, 'local_marketplace_offers.xlsx'), index=False)
+    df.to_excel(os.path.join(dir, f'local_marketplace_offers_{TCG}_{set_name}.xlsx'), index=False)
 
 def main_personal_stock(dir):
     url_login = ''
@@ -193,7 +191,7 @@ def main_marketplace_stock(dir, TCG, set_name):
     time.sleep(1.5)
 
     products = get_offer(driver)
-    order_offer(products, dir)
+    order_offer(products, dir, TCG, set_name)
     driver.quit
 
 if __name__ == "__main__":
