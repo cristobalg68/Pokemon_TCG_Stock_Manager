@@ -31,7 +31,7 @@ def get_products(driver):
             driver.execute_script("window.open('');") 
             driver.switch_to.window(driver.window_handles[1]) 
             driver.get(url_edit)
-            time.sleep(1.5)
+            time.sleep(2.5)
 
             try:
                 name = driver.find_element(By.CSS_SELECTOR, f'#__next > div:nth-child(4) > main > form > div > div > div > div.px-4.py-5.sm\:p-6.flex.flex-col.md\:flex-row.justify-around > div.text-center > h4:nth-child(2)').text
@@ -162,14 +162,14 @@ def order_offer(products, dir, TCG, set_name):
                     'Language': offer['language']
                     })
 
-    set_name = set_name.replace(' ', '_')
+    set_name_file = set_name.replace(' ', '_')
     df = pd.DataFrame(processed_products)
     df['N'] = df['N'].apply(lambda x: int(x[:-4]))
     df['Price'] = df['Price'].apply(lambda x: int(x[1:-4].replace('.','')))
     df['State'] = df['State'].apply(lambda x: x.replace('Estado: ',''))
     df['Card_Type'] = df['Card_Type'].apply(lambda x: x.replace('Holo Reverse','Reverse'))
     df['Quantity'] = df['Quantity'].apply(lambda x: int(x.replace('Cantidad disponible: ','')))
-    df.to_excel(os.path.join(dir, f'local_marketplace_offers_{TCG}_{set_name}.xlsx'), index=False)
+    df.to_excel(os.path.join(dir, f'local_marketplace_offers_{TCG}_{set_name_file}.xlsx'), index=False)
 
 def main_personal_stock(dir):
     url_login = ''
@@ -183,8 +183,8 @@ def main_personal_stock(dir):
     driver.quit()
 
 def main_marketplace_stock(dir, TCG, set_name):
-    set_name = set_name.lower().replace(' ', '-')
-    url = f'https://tcgmatch.cl/cartas/busqueda/tcg={TCG}&edicion={set_name}'
+    set_name_page = set_name.lower().replace(' ', '-')
+    url = f'https://tcgmatch.cl/cartas/busqueda/tcg={TCG}&edicion={set_name_page}'
 
     driver = launch_browser()
     driver.get(url)
@@ -196,6 +196,6 @@ def main_marketplace_stock(dir, TCG, set_name):
 
 if __name__ == "__main__":
     dir = 'datasets'
-    set_name = '151'
+    set_name = 'Prismatic Evolutions'
     #main_personal_stock(dir)
     main_marketplace_stock(dir, 'pokemon', set_name)
