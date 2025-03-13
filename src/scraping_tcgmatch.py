@@ -88,44 +88,70 @@ def update_stock(products, dir):
     df['Card_Type'] = df['Card_Type'].apply(lambda x: x.replace('Holo Reverse','Reverse') if type(x) == str else x)
     df.to_excel(os.path.join(dir, 'local_marketplace_products.xlsx'), index=False)
 
-def get_offer(driver):
+def get_offer(driver, name_user):
     total_cards = driver.find_element(By.CSS_SELECTOR, '#__next > div:nth-child(4) > main > nav > div.mb-3.md\:mb-0.sm\:block > p > span:nth-child(3)').text
-    pages = int(total_cards)//24 + 1
+    pages = int(total_cards) // 24 + 1
 
     reviewed = {}
-    for _ in range(int(pages)):
+    for j in range(int(pages)):
         sup_index = driver.find_elements(By.CSS_SELECTOR, '#__next > div:nth-child(4) > main > nav > div.mb-3.md\:mb-0.sm\:block > p > span:nth-child(2)')[0].text
         sub_index = driver.find_elements(By.CSS_SELECTOR, '#__next > div:nth-child(4) > main > nav > div.mb-3.md\:mb-0.sm\:block > p > span:nth-child(1)')[0].text
         num_items_in_page = int(sup_index) - int(sub_index) + 1
 
+        print(f'Extracting items from the page {j} / {pages} with {num_items_in_page} items')
+
         for i in range(num_items_in_page):
-            name = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p.text-base.font-semibold')[0].text
-            set_name = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p:nth-child(3)')[0].text
-            num = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p:nth-child(4)')[0].text
+            try:
+                name = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p.text-base.font-semibold')[0].text
+            except:
+                print(f'Error with name of element {i}')
+                exit
+
+            try:
+                set_name = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p:nth-child(3)')[0].text
+            except:
+                print(f'Error with set_name of element {i}')
+                exit
+            
+            try:
+                num = driver.find_elements(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1}) > div.col-span-6.flex.flex-col.text-left > p:nth-child(4)')[0].text
+            except:
+                print(f'Error with num of element {i}')
+                exit
+            
             item_id = name + set_name + num
             if item_id not in reviewed:
                 reviewed[item_id] = {}
                 driver.find_element(By.CSS_SELECTOR, fr'#__next > div:nth-child(4) > main > div > div > div.lg\:grid.lg\:grid-cols-3.lg\:gap-x-8.xl\:grid-cols-9.\32 xl\:grid-cols-10 > section > div > a:nth-child({i+1})').click()
-                time.sleep(2.5)
+                time.sleep(1.5)
 
                 offers = []
                 try:
                     items = driver.find_elements(By.CSS_SELECTOR, '#others > ul > li')
-                    in_stock = True
-                    for _ in range(len(items)):
-                        price = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div:nth-child(2) > p.text-green-800.font-semibold.text-center.lg\:text-left').text
-                        state = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div:nth-child(2) > p.text-sm.font-light.text-center.lg\:text-left').text
-                        try:
-                            card_type = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div:nth-child(2) > div > span.inline-flex.items-center.rounded-full.bg-blue-50.px-2.py-1.text-xs.font-medium.text-blue-700.ring-1.ring-inset.ring-blue-700\/10').text
-                        except:
-                            card_type = 'Normal'
-                        quantity = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div:nth-child(3) > p').text
-                        try:
-                            municipality = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div.flex.flex-row.items-center.gap-3 > div > a > div > p').text
-                        except:
-                            municipality = 'None'
-                        language = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({i+1}) > div:nth-child(2) > div > span.inline-flex.items-center.rounded-full.bg-yellow-50.px-2.py-1.text-xs.font-medium.text-yellow-800.ring-1.ring-inset.ring-yellow-600\/20').text
-                        offers.append({'price': price, 'state': state, 'language': language, 'card_type': card_type, 'quantity': quantity, 'municipality': municipality})
+                    total_items = len(items)
+                    for k in range(len(items)):
+                        seller = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div.flex.flex-row.items-center.gap-3 > div > a > p').text
+                        if seller != name_user:
+                            price = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div:nth-child(2) > p.text-green-800.font-semibold.text-center.lg\:text-left').text
+                            state = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div:nth-child(2) > p.text-sm.font-light.text-center.lg\:text-left').text
+                            try:
+                                card_type = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div:nth-child(2) > div > span.inline-flex.items-center.rounded-full.bg-blue-50.px-2.py-1.text-xs.font-medium.text-blue-700.ring-1.ring-inset.ring-blue-700\/10').text
+                            except:
+                                card_type = 'Normal'
+                            quantity = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div:nth-child(3) > p').text
+                            try:
+                                municipality = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div.flex.flex-row.items-center.gap-3 > div > a > div > p').text
+                            except:
+                                municipality = 'None'
+                            language = driver.find_element(By.CSS_SELECTOR, f'#others > ul > li:nth-child({k+1}) > div:nth-child(2) > div > span.inline-flex.items-center.rounded-full.bg-yellow-50.px-2.py-1.text-xs.font-medium.text-yellow-800.ring-1.ring-inset.ring-yellow-600\/20').text
+                            offers.append({'price': price, 'state': state, 'language': language, 'card_type': card_type, 'quantity': quantity, 'municipality': municipality})
+                        else:
+                            total_items -= 1
+
+                    if total_items == 0:
+                        in_stock = False
+                    else:
+                        in_stock = True
                 except:
                     in_stock = False
 
@@ -136,10 +162,11 @@ def get_offer(driver):
                 reviewed[item_id]['Offers'] = offers
 
                 driver.back()
+                time.sleep(1.5)
     
         try:
             driver.find_element(By.CSS_SELECTOR, '#__next > div:nth-child(4) > main > nav > div.flex.flex-1.justify-between.sm\:justify-end > button.relative.ml-3.inline-flex.items-center.rounded-md.bg-white.px-3.py-2.text-sm.font-semibold.text-gray-900.ring-1.ring-inset.ring-gray-300.hover\:bg-gray-50.focus-visible\:outline-offset-0').click()
-            time.sleep(2.5)
+            time.sleep(1.5)
         except:
             break
 
@@ -179,20 +206,21 @@ def main_personal_stock(dir):
     time.sleep(1.5)
 
     products = get_products(driver)
-    update_stock(products, dir)
     driver.quit()
+    update_stock(products, dir)
 
 def main_marketplace_stock(dir, TCG, set_name):
     set_name_page = set_name.lower().replace(' ', '-')
     url = f'https://tcgmatch.cl/cartas/busqueda/tcg={TCG}&edicion={set_name_page}'
+    name_user = 'Cristobal Guerra'
 
     driver = launch_browser()
     driver.get(url)
     time.sleep(1.5)
 
-    products = get_offer(driver)
-    order_offer(products, dir, TCG, set_name)
+    products = get_offer(driver, name_user)
     driver.quit
+    order_offer(products, dir, TCG, set_name)
 
 if __name__ == "__main__":
     dir = 'datasets'
