@@ -2,7 +2,7 @@
 
 ## Description
 
-IPokemon TCG Stock Manager is a set of Python tools designed to help manage the inventory of a Pokémon TCG card store on the [TCGplayer](https://www.tcgplayer.com) platform. It automates stock updates, detects discrepancies between published and actual inventory, and suggests competitive prices based on competitor analysis. 
+IPokemon TCG Stock Manager is a set of Python tools designed to help manage the inventory of a Pokémon TCG card store on the [TCGmatch](https://tcgmatch.cl) platform. It automates stock updates, detects discrepancies between published and actual inventory, and suggests competitive prices based on competitor analysis. 
 
 ## Motivation
 
