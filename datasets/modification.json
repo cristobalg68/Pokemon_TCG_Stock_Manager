@@ -1,0 +1,34 @@
+{
+    "Correct_Publication_Stock": [
+        {
+            "name": "Vulpix",
+            "set": "Surging Sparks",
+            "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+            "type": "Holo Reverse",
+            "stock": 2,
+            "number": 16,
+            "suggestion": {
+                "englishOffer": 1,
+                "excellentState": 1,
+                "rmPrice": 700,
+                "outsideRmPrice": 447
+            }
+        }
+    ],
+    "Update_Publication_Stock": [
+        {
+            "name": "Vulpix",
+            "set": "Surging Sparks",
+            "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+            "type": "Normal",
+            "stock": 3,
+            "number": 16,
+            "suggestion": {
+                "englishOffer": 1,
+                "excellentState": 1,
+                "rmPrice": 250
+            }
+        }
+    ],
+    "Create_Publication": []
+}
