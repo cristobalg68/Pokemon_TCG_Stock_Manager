@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-import numpy as np
 import json
 
 def mixing_tables_stock(dir, set_name):
@@ -138,53 +137,95 @@ def mixing_tables_price(dir, set_name, df_mixed):
 
 def generate_suggestion(row):
     if not row['Offers_Exists']:
-        return "No offer available."
+        return "No offer available.", {}
     
     parts = []
+    parts_dict = {}
     
     if row['In_English']:
         parts.append("English")
+        parts_dict["englishOffer"] = 1
     
     if row['Is_Excellent']:
         parts.append("Excellent")
+        parts_dict["excellentState"] = 1
     
     if row['Min_Offers_Price_in_RM'] != -1:
         parts.append(f"The minimum price within the RM is {row['Min_Offers_Price_in_RM']}")
+        parts_dict["rmPrice"] = row['Min_Offers_Price_in_RM']
     
     if row['Min_Offers_Price_out_RM'] != -1:
         parts.append(f"Outside the RM is {row['Min_Offers_Price_out_RM']}")
+        parts_dict["outsideRmPrice"] = row['Min_Offers_Price_out_RM']
     
-    return " / ".join(parts)
+    return " / ".join(parts), parts_dict
 
-def analysis(df):
+def analysis(df, set_name, dir):
     df['diff'] = df['Quantity'] - df['Published_Quantity']
     unpublished = df[df['Publication_Exists'] == False]
     published = df[df['Publication_Exists'] == True]
+    json_data = {"Correct_Publication_Stock": [], "Update_Publication_Stock": [], "Create_Publication": []}
 
     print('Correct Publication Stock')
     for _, row in published.iterrows():
         if row['diff'] < 0:
-            price_suggestion = generate_suggestion(row)
-            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion))
+            price_suggestion_str, price_suggestion_dict = generate_suggestion(row)
+            json_data["Correct_Publication_Stock"].append(
+                {
+                    "name": row['Name'],
+                    "set": set_name,
+                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
+                    "stock": row['Quantity'],
+                    "number": row['N'],
+                    "suggestion": price_suggestion_dict
+                }
+            )
+            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion_str))
 
     print('Update Publication Stock')
     for _, row in published.iterrows():  
         if row['diff'] > 0:
-            price_suggestion = generate_suggestion(row)
-            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion))
+            price_suggestion_str, price_suggestion_dict = generate_suggestion(row)
+            json_data["Update_Publication_Stock"].append(
+                {
+                    "name": row['Name'],
+                    "set": set_name,
+                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
+                    "stock": row['Quantity'],
+                    "number": row['N'],
+                    "suggestion": price_suggestion_dict
+                }
+            )
+            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion_str))
 
     print('Create Publication')
     for _, row in unpublished.iterrows():
         if row['diff'] != 0:
-            price_suggestion = generate_suggestion(row)
-            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion))
+            price_suggestion_str, price_suggestion_dict = generate_suggestion(row)
+            json_data["Create_Publication"].append(
+                {
+                    "name": row['Name'],
+                    "set": set_name,
+                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
+                    "stock": row['Quantity'],
+                    "number": row['N'],
+                    "suggestion": price_suggestion_dict
+                }
+            )
+            print('Name: {} / Card Type: {} / Stock Quantity: {} / Price Suggestion: {}'.format(row['Name'], row['Card_Type'], row['Quantity'], price_suggestion_str))
+
+    with open(os.path.join(dir, 'modification.json'), 'w') as file:
+        json.dump(json_data, file, indent=4)
 
 def main(dir, set_name):
     df_mixed = mixing_tables_stock(dir, set_name)
     df_mixed = mixing_tables_price(dir, set_name, df_mixed)
-    analysis(df_mixed)
+    analysis(df_mixed, set_name, dir)
 
 if __name__ == "__main__":
     dir = 'datasets'
-    set_name = 'Prismatic Evolutions' #Prismatic Evolutions
+    set_name = 'Surging Sparks' #Prismatic Evolutions
     main(dir, set_name)
