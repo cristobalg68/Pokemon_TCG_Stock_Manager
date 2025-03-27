@@ -135,6 +135,28 @@ def mixing_tables_price(dir, set_name, df_mixed):
     
     return df_mixed
 
+def mixing_tables_images(dir, set_name, df_mixed):
+    df_cards = pd.read_excel(os.path.join(dir, f'cards_of_pokemon.xlsx'))
+
+    df_cards['Local_ID'] = pd.to_numeric(df_cards['Local_ID'], errors='coerce')
+    df_cards = df_cards.dropna()
+    df_cards['Local_ID'] = df_cards['Local_ID'].astype(int)
+
+    image_url_card = []
+    for _, row in df_mixed.iterrows():
+        card = df_cards[
+            (df_cards['Local_ID'] == row['N']) & 
+            (df_cards['Set_Name'] == set_name)]
+        
+        if len(card) > 0:
+            image_url_card.append(card.iloc[0]['Image_Card_URL'])
+        else:
+            image_url_card.append("https://assets.tcgdex.net/en/base/base1/5/high.png")  #  TO DO: add a not imagen card
+    
+    df_mixed['URL_Image'] = image_url_card
+
+    return df_mixed
+
 def generate_suggestion(row):
     if not row['Offers_Exists']:
         return "No offer available.", {}
@@ -174,7 +196,7 @@ def analysis(df, set_name, dir):
                 {
                     "name": row['Name'],
                     "set": set_name,
-                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "url": row['URL_Image'],
                     "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
                     "stock": row['Quantity'],
                     "number": row['N'],
@@ -191,7 +213,7 @@ def analysis(df, set_name, dir):
                 {
                     "name": row['Name'],
                     "set": set_name,
-                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "url": row['URL_Image'],
                     "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
                     "stock": row['Quantity'],
                     "number": row['N'],
@@ -208,7 +230,7 @@ def analysis(df, set_name, dir):
                 {
                     "name": row['Name'],
                     "set": set_name,
-                    "url": "https://assets.tcgdex.net/en/base/base1/5/high.png",
+                    "url": row['URL_Image'],
                     "type": row['Card_Type'] if row['Card_Type'] != 'Reverse' else 'Holo Reverse',
                     "stock": row['Quantity'],
                     "number": row['N'],
@@ -223,6 +245,7 @@ def analysis(df, set_name, dir):
 def main(dir, set_name):
     df_mixed = mixing_tables_stock(dir, set_name)
     df_mixed = mixing_tables_price(dir, set_name, df_mixed)
+    df_mixed = mixing_tables_images(dir, set_name, df_mixed)
     analysis(df_mixed, set_name, dir)
 
 if __name__ == "__main__":
